@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level 2: Bomb Drop | Projectile Master</title>
+    <style>
+        :root {
+            --primary: #1a1a2e;
+            --secondary: #16213e;
+            --accent: #e94560;
+            --light: #f1f1f1;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --info: #3498db;
+            --dark: #0f0f1a;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: var(--primary);
+            color: var(--light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .game-container {
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .game-header h1 {
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .game-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 1.1rem;
+        }
+        #gameCanvas {
+            width: 100%;
+            background-color: #4682B4;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+        .controls {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .control-group {
+            margin-bottom: 15px;
+        }
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .slider {
+            width: 100%;
+            height: 10px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            border-radius: 5px;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            background: #d23369;
+        }
+        .btn {
+            background: linear-gradient(to right, var(--accent), #d23369);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        .btn:active {
+            transform: translateY(1px);
+        }
+        .launch-btn {
+            width: 100%;
+            margin: 15px 0;
+            padding: 15px;
+            font-size: 1.2rem;
+            background: linear-gradient(to right, var(--accent), #d23369);
+        }
+        .game-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .game-buttons .btn {
+            flex: 1;
+        }
+        .next-btn {
+            background: linear-gradient(to right, var(--success), #27ae60);
+        }
+        .formula-toggle {
+            width: 100%;
+            margin-bottom: 15px;
+            background: linear-gradient(to right, var(--info), #3498db);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+        .problem-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .problem-container h3 {
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+        .problem-container p {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        .problem-container .constants {
+            font-style: italic;
+            color: var(--light);
+            opacity: 0.8;
+            margin-top: 10px;
+        }
+        .feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        @media (max-width: 768px) {
+            .game-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            .game-stats {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .game-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1>
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path fill="currentColor" d="M11,15H13V17H11V15M11,7H13V13H11V7M12,2C6.47,2 2,6.5 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20M17,15.88V16A5,5 0 0,1 12,21A5,5 0 0,1 7,16V15.88C7,13.04 9.96,12 12,12C14.04,12 17,13.04 17,15.88Z"/>
+                </svg>
+                Level 2: Bomb Drop
+            </h1>
+            <div class="game-stats">
+                <span><svg viewBox="0 0 24 24" width="16" height="16" style="margin-right: 5px;"><path fill="currentColor" d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M11,15H13V17H11V15M11,7H13V13H11V7M17,15.88V16A5,5 0 0,1 12,21A5,5 0 0,1 7,16V15.88C7,13.04 9.96,12 12,12C14.04,12 17,13.04 17,15.88Z"/></svg> <span id="attempts">0</span></span>
+                <span><svg viewBox="0 0 24 24" width="16" height="16" style="margin-right: 5px;"><path fill="currentColor" d="M12,2L15.09,8.26L22,9.27L17,14.14L18.18,21.02L12,17.77L5.82,21.02L7,14.14L2,9.27L8.91,8.26L12,2Z"/></svg> <span id="stars">0</span>/3</span>
+            </div>
+        </div>
+        
+        <div class="problem-container">
+            <h3>Physics Problem</h3>
+            <p>A plane is flying at <span id="plane-altitude">300</span> meters altitude with speed <span id="plane-speed">100</span> m/s.</p>
+            <p><strong>Calculate:</strong> The distance before the target where you should drop the bomb to hit the target.</p>
+            <div class="constants">
+                <p>Constants: Gravity = 9.8 m/s², Target Position = (700, 450)</p>
+                <p>Formula: Distance = speed × √(2×altitude/g)</p>
+            </div>
+            <div class="feedback" id="feedback"></div>
+        </div>
+        
+        <canvas id="gameCanvas" width="800" height="500"></canvas>
+        
+        <div class="controls">
+            <button id="formulaToggle" class="btn formula-toggle">
+                <svg viewBox="0 0 24 24" width="16" height="16">
+                    <path fill="currentColor" d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z"/>
+                </svg>
+                Show Formulas
+            </button>
+            
+            <div class="control-group">
+                <label for="speed">
+                    <svg viewBox="0 0 24 24" width="16" height="16">
+                        <path fill="currentColor" d="M13,13V19H11V13H5V11H11V5H13V11H19V13H13Z"/>
+                    </svg>
+                    Plane Speed: <span id="speedValue">100</span> m/s
+                </label>
+                <input type="range" id="speed" min="50" max="200" value="100" class="slider">
+            </div>
+            
+            <div class="control-group">
+                <label for="altitude">
+                    <svg viewBox="0 0 24 24" width="16" height="16">
+                        <path fill="currentColor" d="M12,3L2,12H5V20H11V14H13V20H19V12H22L12,3Z"/>
+                    </svg>
+                    Altitude: <span id="altitudeValue">300</span> m
+                </label>
+                <input type="range" id="altitude" min="100" max="500" value="300" class="slider">
+            </div>
+            
+            <div class="control-group">
+                <label for="distance">
+                    <svg viewBox="0 0 24 24" width="16" height="16">
+                        <path fill="currentColor" d="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M12,6A1,1 0 0,1 13,7A1,1 0 0,1 12,8A1,1 0 0,1 11,7A1,1 0 0,1 12,6M7,6A1,1 0 0,1 8,7A1,1 0 0,1 7,8A1,1 0 0,1 6,7A1,1 0 0,1 7,6M17,18H7V16H17V18M17,13H7V11H17V13Z"/>
+                    </svg>
+                    Drop Distance: <span id="distanceValue">300</span> m
+                </label>
+                <input type="range" id="distance" min="50" max="550" value="300" class="slider">
+            </div>
+            
+            <button id="launchBtn" class="btn launch-btn">
+                <svg viewBox="0 0 24 24" width="20" height="20" style="margin-right: 8px;">
+                    <path fill="currentColor" d="M3,12V16.18L7.98,12L3,7.82V12M12,3A9,9 0 0,0 3,12A9,9 0 0,0 12,21A9,9 0 0,0 21,12A9,9 0 0,0 12,3M12,7L17,12L12,17L7,12L12,7Z"/>
+                </svg>
+                Start Flight
+            </button>
+            
+            <div class="game-buttons">
+                <button id="resetBtn" class="btn">
+                    <svg viewBox="0 0 24 24" width="16" height="16" style="margin-right: 8px;">
+                        <path fill="currentColor" d="M12,5V9L16,6L12,3V7A7,7 0 0,0 5,14H7A5,5 0 0,1 12,9A5,5 0 0,1 17,14A5,5 0 0,1 12,19A5,5 0 0,1 7,14H5A7,7 0 0,0 12,21A7,7 0 0,0 19,14A7,7 0 0,0 12,5Z"/>
+                    </svg>
+                    Reset
+                </button>
+                <button id="menuBtn" class="btn">
+                    <svg viewBox="0 0 24 24" width="16" height="16" style="margin-right: 8px;">
+                        <path fill="currentColor" d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z"/>
+                    </svg>
+                    Menu
+                </button>
+                <button id="nextBtn" class="btn next-btn" disabled>
+                    <svg viewBox="0 0 24 24" width="16" height="16" style="margin-right: 8px;">
+                        <path fill="currentColor" d="M4,15V9H12V4.16L19.84,12L12,19.84V15H4Z"/>
+                    </svg>
+                    Next Level
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    class PhysicsEngine {
+        constructor() {
+            this.gravity = 0.5; // Reduced gravity for better gameplay
+            this.timeStep = 0.016; // ~60fps
+        }
+
+        calculateBombDrop(speed, altitude, distance, startX, steps) {
+            const points = [];
+            let x = startX, y = altitude;
+            let vx = speed * 0.5; // Scale factor for canvas
+            let vy = 0;
+            let dropped = false;
+            
+            for (let i = 0; i < steps; i++) {
+                if (!dropped && x >= distance) {
+                    dropped = true;
+                    vy = 0;
+                }
+                
+                // Update position
+                if (dropped) {
+                    vy += this.gravity * this.timeStep;
+                    y += vy * this.timeStep;
+                }
+                
+                x += vx * this.timeStep;
+                
+                points.push({x, y});
+                if (y > 450) break; // Stop when bomb hits the ground
+            }
+            return points;
+        }
+    }
+
+    class Game {
+        constructor(config) {
+            this.canvas = document.getElementById(config.canvasId);
+            this.ctx = this.canvas.getContext('2d');
+            this.levelType = config.levelType;
+            
+            // Generate random problem parameters
+            this.planeAltitude = Math.floor(Math.random() * 400) + 100;
+            this.planeSpeed = Math.floor(Math.random() * 150) + 50;
+            
+            // Update problem display
+            document.getElementById('plane-altitude').textContent = this.planeAltitude;
+            document.getElementById('plane-speed').textContent = this.planeSpeed;
+            
+            // Set slider defaults to match problem
+            document.getElementById('altitude').value = this.planeAltitude;
+            document.getElementById('altitudeValue').textContent = this.planeAltitude;
+            document.getElementById('speed').value = this.planeSpeed;
+            document.getElementById('speedValue').textContent = this.planeSpeed;
+            
+            this.target = config.target;
+            this.start = config.start;
+            this.background = config.background;
+            this.onComplete = config.onComplete;
+            
+            this.physics = new PhysicsEngine();
+            this.projectile = null;
+            this.attempts = 0;
+            this.animationId = null;
+            this.isComplete = false;
+            this.showFormulas = false;
+            this.trajectoryPoints = [];
+            
+            this.setupCanvas();
+            this.draw();
+            
+            this.loadProgress();
+        }
+        
+        setupCanvas() {
+            const dpr = window.devicePixelRatio || 1;
+            const rect = this.canvas.getBoundingClientRect();
+            this.canvas.width = rect.width * dpr;
+            this.canvas.height = rect.height * dpr;
+            this.ctx.scale(dpr, dpr);
+        }
+        
+        draw() {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            
+            // Draw background
+            const skyGradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+            skyGradient.addColorStop(0, '#4682B4');
+            skyGradient.addColorStop(1, '#1E90FF');
+            this.ctx.fillStyle = skyGradient;
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            
+            // Draw ground
+            this.ctx.fillStyle = '#2E8B57';
+            this.ctx.fillRect(0, this.canvas.height - 50, this.canvas.width, 50);
+            
+            // Draw target
+            this.drawTarget();
+            
+            // Draw projectile if exists
+            if (this.projectile) {
+                this.drawProjectile();
+            }
+            
+            // Draw trajectory preview if not launched
+            if (!this.projectile) {
+                this.drawTrajectory();
+            }
+            
+            // Draw formulas if enabled
+            if (this.showFormulas) {
+                this.drawPhysicsFormulas();
+            }
+        }
+        
+        drawTarget() {
+            // Draw bullseye
+            this.ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+            this.ctx.beginPath();
+            this.ctx.arc(this.target.x, this.target.y, this.target.radius, 0, Math.PI * 2);
+            this.ctx.fill();
+            
+            this.ctx.strokeStyle = 'white';
+            this.ctx.lineWidth = 2;
+            this.ctx.beginPath();
+            this.ctx.arc(this.target.x, this.target.y, this.target.radius - 5, 0, Math.PI * 2);
+            this.ctx.stroke();
+        }
+        
+        drawProjectile() {
+            // Draw plane if not dropped
+            if (!this.projectile.dropped) {
+                this.ctx.fillStyle = '#333';
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.projectile.x - 30, this.projectile.y);
+                this.ctx.lineTo(this.projectile.x, this.projectile.y - 10);
+                this.ctx.lineTo(this.projectile.x + 30, this.projectile.y);
+                this.ctx.closePath();
+                this.ctx.fill();
+            }
+            // Draw bomb if dropped
+            else {
+                this.ctx.fillStyle = '#555';
+                this.ctx.beginPath();
+                this.ctx.arc(this.projectile.x, this.projectile.y, 8, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Draw motion trail
+                if (this.trajectoryPoints.length > 0) {
+                    this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(this.trajectoryPoints[0].x, this.trajectoryPoints[0].y);
+                    
+                    for (let i = 1; i < this.trajectoryPoints.length; i++) {
+                        this.ctx.lineTo(this.trajectoryPoints[i].x, this.trajectoryPoints[i].y);
+                    }
+                    
+                    this.ctx.stroke();
+                }
+            }
+        }
+        
+        drawTrajectory() {
+            const speed = parseInt(document.getElementById('speed').value);
+            const altitude = parseInt(document.getElementById('altitude').value);
+            const distance = parseInt(document.getElementById('distance').value);
+            const trajectory = this.physics.calculateBombDrop(speed, altitude, distance, this.start.x, 500);
+            
+            this.ctx.beginPath();
+            this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            this.ctx.setLineDash([5, 5]);
+            this.ctx.lineWidth = 2;
+            this.ctx.moveTo(this.start.x, this.start.y);
+            
+            trajectory.forEach(point => {
+                this.ctx.lineTo(point.x, point.y);
+            });
+            
+            this.ctx.stroke();
+            this.ctx.setLineDash([]);
+        }
+        
+        drawPhysicsFormulas() {
+            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            this.ctx.fillRect(10, 10, 300, 150);
+            
+            this.ctx.fillStyle = 'white';
+            this.ctx.font = '14px Arial';
+            this.ctx.textAlign = 'left';
+            
+            this.ctx.fillText('Bomb Drop Formulas:', 20, 30);
+            this.ctx.fillText('Time to fall: t = √(2h/g)', 20, 50);
+            this.ctx.fillText('Horizontal distance: d = v₀·t', 20, 70);
+            this.ctx.fillText('Vertical velocity: v = g·t', 20, 90);
+            this.ctx.fillText('Impact speed: v = √(vₓ² + vᵧ²)', 20, 110);
+        }
+        
+        launch() {
+            if (this.projectile || this.isComplete) return;
+            
+            this.attempts++;
+            document.getElementById('attempts').textContent = this.attempts;
+            this.trajectoryPoints = [];
+            
+            const speed = parseInt(document.getElementById('speed').value);
+            const altitude = parseInt(document.getElementById('altitude').value);
+            const distance = parseInt(document.getElementById('distance').value);
+            
+            this.projectile = {
+                x: this.start.x,
+                y: altitude,
+                vx: speed * 0.5,
+                vy: 0,
+                dropped: false,
+                dropX: distance,
+                speed: speed,
+                altitude: altitude,
+                distance: distance
+            };
+            
+            this.animate();
+        }
+        
+        animate() {
+            if (!this.projectile) return;
+            
+            // Record trajectory points for motion trail
+            if (this.trajectoryPoints.length === 0 || 
+                Math.abs(this.trajectoryPoints[this.trajectoryPoints.length-1].x - this.projectile.x) > 5 ||
+                Math.abs(this.trajectoryPoints[this.trajectoryPoints.length-1].y - this.projectile.y) > 5) {
+                this.trajectoryPoints.push({x: this.projectile.x, y: this.projectile.y});
+            }
+            
+            // Check if time to drop bomb
+            if (!this.projectile.dropped && this.projectile.x >= this.projectile.dropX) {
+                this.projectile.dropped = true;
+                this.projectile.vy = 0;
+            }
+            
+            // Update position
+            this.projectile.x += this.projectile.vx * this.physics.timeStep;
+            
+            // Update bomb position if dropped
+            if (this.projectile.dropped) {
+                this.projectile.vy += this.physics.gravity * this.physics.timeStep;
+                this.projectile.y += this.projectile.vy * this.physics.timeStep;
+            }
+            
+            // Check for collisions with target
+            const dx = this.projectile.x - this.target.x;
+            const dy = this.projectile.y - this.target.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (this.projectile.dropped && distance < this.target.radius + 8) {
+                // Hit target
+                this.isComplete = true;
+                
+                // Calculate accuracy score
+                const accuracy = this.calculateAccuracy();
+                
+                // Save progress
+                this.saveProgress(accuracy.stars);
+                
+                // Show success effect
+                this.showSuccessEffect();
+                
+                if (this.onComplete) this.onComplete(this.attempts, accuracy);
+                return;
+            }
+            
+            // Check if out of bounds
+            if (this.projectile.y > this.canvas.height - 50 || 
+                this.projectile.x > this.canvas.width) {
+                this.reset();
+                return;
+            }
+            
+            this.draw();
+            this.animationId = requestAnimationFrame(() => this.animate());
+        }
+        
+        calculateAccuracy() {
+            const speed = this.projectile.speed;
+            const altitude = this.projectile.altitude;
+            const dropDistance = this.projectile.dropX;
+            
+            // Calculate theoretical perfect drop distance
+            const perfectDistance = speed * 0.5 * Math.sqrt((2 * altitude) / this.physics.gravity);
+            const distanceDiff = Math.abs(dropDistance - perfectDistance);
+            
+            let stars = 1;
+            let feedback = "Good try!";
+            
+            if (distanceDiff < 20) {
+                stars = 3;
+                feedback = "Perfect drop! You've mastered bomb trajectories!";
+            } else if (distanceDiff < 50) {
+                stars = 2;
+                feedback = "Great drop! Close to perfect distance.";
+            } else {
+                feedback = "Good attempt! Try adjusting your drop distance.";
+            }
+            
+            // Show feedback
+            const feedbackElement = document.getElementById('feedback');
+            feedbackElement.textContent = feedback;
+            feedbackElement.style.color = stars === 3 ? '#2ecc71' : stars === 2 ? '#f39c12' : '#e94560';
+            
+            return { stars, feedback };
+        }
+        
+        showSuccessEffect() {
+            // Create particle explosion effect
+            for (let i = 0; i < 50; i++) {
+                const particle = {
+                    x: this.target.x,
+                    y: this.target.y,
+                    vx: Math.random() * 6 - 3,
+                    vy: Math.random() * 6 - 3,
+                    radius: Math.random() * 4 + 2,
+                    color: `hsl(${Math.random() * 60 + 10}, 100%, 50%)`,
+                    life: 100
+                };
+                
+                const animateParticle = () => {
+                    this.ctx.globalCompositeOperation = 'lighter';
+                    this.ctx.fillStyle = particle.color;
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    particle.vy += 0.1;
+                    particle.radius *= 0.97;
+                    particle.life--;
+                    
+                    if (particle.life > 0) {
+                        requestAnimationFrame(animateParticle);
+                    }
+                };
+                
+                animateParticle();
+            }
+        }
+        
+        saveProgress(stars) {
+            let progress = {
+                completed: 0,
+                stars: 0,
+                levelStars: [0, 0, 0]
+            };
+            
+            // Load existing progress
+            const savedData = localStorage.getItem('projectileMasterProgress');
+            if (savedData) {
+                progress = JSON.parse(savedData);
+            }
+            
+            // Only update if this is a better result
+            if (stars > progress.levelStars[1]) {
+                progress.levelStars[1] = stars;
+                
+                // Recalculate totals
+                progress.completed = progress.levelStars.filter(s => s > 0).length;
+                progress.stars = progress.levelStars.reduce((a, b) => a + b, 0);
+                
+                // Save to localStorage
+                localStorage.setItem('projectileMasterProgress', JSON.stringify(progress));
+            }
+        }
+        
+        loadProgress() {
+            const savedData = localStorage.getItem('projectileMasterProgress');
+            if (savedData) {
+                const progress = JSON.parse(savedData);
+                document.getElementById('attempts').textContent = this.attempts;
+                
+                if (progress.levelStars[1] > 0) {
+                    document.getElementById('stars').textContent = progress.levelStars[1];
+                }
+            }
+        }
+        
+        reset() {
+            cancelAnimationFrame(this.animationId);
+            this.projectile = null;
+            this.trajectoryPoints = [];
+            this.draw();
+        }
+        
+        toggleFormulas() {
+            this.showFormulas = !this.showFormulas;
+            document.getElementById('formulaToggle').innerHTML = `
+                <svg viewBox="0 0 24 24" width="16" height="16">
+                    <path fill="currentColor" d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z"/>
+                </svg>
+                ${this.showFormulas ? 'Hide' : 'Show'} Formulas
+            `;
+            this.draw();
+        }
+    }
+
+    // Initialize game with random problem
+    const game = new Game({
+        canvasId: 'gameCanvas',
+        levelType: 'bomb',
+        target: { x: 700, y: 450, radius: 25 },
+        start: { x: -50, y: 100 },
+        background: 'linear-gradient(to bottom, #4682B4, #1E90FF)',
+        onComplete: function(attempts, accuracy) {
+            document.getElementById('nextBtn').disabled = false;
+            document.getElementById('stars').textContent = accuracy.stars;
+        }
+    });
+    
+    // Event listeners
+    document.getElementById('launchBtn').addEventListener('click', () => game.launch());
+    document.getElementById('resetBtn').addEventListener('click', () => game.reset());
+    document.getElementById('menuBtn').addEventListener('click', () => {
+        window.location.href = 'index.html';
+    });
+    document.getElementById('nextBtn').addEventListener('click', () => {
+        window.location.href = 'level3.html';
+    });
+    document.getElementById('formulaToggle').addEventListener('click', () => game.toggleFormulas());
+    
+    // Update slider displays
+    document.getElementById('speed').addEventListener('input', function() {
+        document.getElementById('speedValue').textContent = this.value;
+        game.draw();
+    });
+    
+    document.getElementById('altitude').addEventListener('input', function() {
+        document.getElementById('altitudeValue').textContent = this.value;
+        game.draw();
+    });
+    
+    document.getElementById('distance').addEventListener('input', function() {
+        document.getElementById('distanceValue').textContent = this.value;
+        game.draw();
+    });
+</script>
+</body>
+</html>

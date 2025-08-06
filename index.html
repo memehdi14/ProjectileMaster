@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projectile Master</title>
+    <style>
+        :root {
+            --primary: #1a1a2e;
+            --secondary: #16213e;
+            --accent: #e94560;
+            --light: #f1f1f1;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --info: #3498db;
+            --dark: #0f0f1a;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: var(--primary);
+            color: var(--light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            text-align: center;
+        }
+        .header {
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--accent);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .header p {
+            font-size: 1.1rem;
+            color: var(--light);
+            opacity: 0.8;
+        }
+        .icon {
+            width: 1em;
+            height: 1em;
+            vertical-align: middle;
+            fill: currentColor;
+        }
+        .rocket {
+            color: var(--accent);
+        }
+        .menu {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            background: linear-gradient(to right, var(--accent), #d23369);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        .btn:active {
+            transform: translateY(1px);
+        }
+        .play-btn {
+            background: linear-gradient(to right, var(--success), #27ae60);
+            font-weight: bold;
+            padding: 15px 30px;
+        }
+        .level-previews {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .level-card {
+            background-color: var(--secondary);
+            padding: 25px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        .level-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        .level-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--accent);
+        }
+        .level-card p {
+            margin-bottom: 15px;
+            color: var(--light);
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+        .level-icon {
+            width: 40px;
+            height: 40px;
+            margin-top: 10px;
+            color: var(--accent);
+        }
+        .stars {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        .star {
+            width: 20px;
+            height: 20px;
+        }
+        .progress-tracker {
+            width: 100%;
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+        }
+        .progress-bar {
+            height: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--accent), var(--info));
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+        .progress-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .upcoming-section {
+            margin-top: 40px;
+            width: 100%;
+        }
+        .upcoming-section h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+        .upcoming-levels {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .upcoming-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        .upcoming-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            border-color: var(--accent);
+        }
+        .upcoming-card h3 {
+            color: var(--info);
+            margin-bottom: 10px;
+        }
+        .upcoming-card p {
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .coming-soon {
+            background: linear-gradient(to right, #9b59b6, #8e44ad);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: inline-block;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            overflow: auto;
+        }
+        .modal-content {
+            background: var(--secondary);
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 800px;
+            width: 90%;
+            position: relative;
+            animation: modalOpen 0.4s ease;
+        }
+        @keyframes modalOpen {
+            from {opacity: 0; transform: translateY(-50px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        .close:hover {
+            color: var(--light);
+        }
+        .tutorial-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+        .physics-concepts {
+            margin-top: 20px;
+            text-align: left;
+        }
+        .physics-concept {
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .physics-concept h3 {
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+        .physics-concept p {
+            margin-bottom: 10px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+        }
+        .physics-concept .formula {
+            font-family: monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            margin: 5px 0;
+        }
+        .step {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        .tutorial-icon {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 15px;
+            color: var(--accent);
+        }
+        .step h3 {
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+        .step p {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        @media (max-width: 768px) {
+            .modal-content {
+                margin: 10% auto;
+                padding: 20px;
+            }
+            .tutorial-steps {
+                grid-template-columns: 1fr;
+            }
+            .menu {
+                flex-direction: column;
+                align-items: center;
+            }
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <svg class="icon rocket" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M12 2.5c0 0 4.5 2.04 4.5 10.5 0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5zm2 8.5c0-1.1-.9-2-2-2s-2 .9-2 2 .9 2 2 2 2-.9 2-2zm-6.31 9.52c-.48-1.23-1.52-4.17-1.67-6.87l-1.13.75c-.56.38-.89 1-.89 1.67V22l3.69-1.48zM20 22v-5.93c0-.67-.33-1.29-.89-1.66l-1.13-.75c-.15 2.69-1.2 5.64-1.67 6.87L20 22z"/>
+                </svg>
+                Projectile Master
+            </h1>
+            <p>Master physics through interactive gameplay</p>
+        </div>
+        
+        <div class="progress-tracker">
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 0%"></div>
+            </div>
+            <div class="progress-stats">
+                <span class="stat"><span id="completed-levels">0</span>/3 Levels</span>
+                <span class="stat"><span id="total-stars">0</span>/9 Stars</span>
+            </div>
+        </div>
+        
+        <div class="menu">
+            <button id="startGame" class="btn play-btn">
+                <svg class="icon" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M8,5V21L21,12.96L8,5Z"/>
+                </svg>
+                Start Game
+            </button>
+            <button id="howToPlay" class="btn">
+                <svg class="icon" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10-4.48,10-10S17.52,2 12,2zm1,17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45,12.9 13,13.5 13,15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2,.9-2,2H8c0-2.21,1.79-4 4-4s4,1.79 4,4c0,.88-.36,1.68-.93,2.25z"/>
+                </svg>
+                How to Play
+            </button>
+            <button id="physicsGuide" class="btn">
+                <svg class="icon" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M12,3L1,9l11,6 9-4.91V17h2V9M5,13.18v4L12,21l7-3.82v-4L12,17l-7-3.82z"/>
+                </svg>
+                Physics Guide
+            </button>
+        </div>
+        
+        <div class="level-previews">
+            <div class="level-card" data-level="1">
+                <h3>Level 1: Basic Projectile</h3>
+                <p>Master the fundamentals of projectile motion</p>
+                <div class="stars">
+                    <svg class="star" viewBox="0 0 24 24">
+                        <path fill="none" stroke="currentColor" stroke-width="2" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <svg class="star" viewBox="0 0 24 24">
+                        <path fill="none" stroke="currentColor" stroke-width="2" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <svg class="star" viewBox="0 0 24 24">
+                        <path fill="none" stroke="currentColor" stroke-width="2" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                </div>
+                <svg class="level-icon" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,10.5A1.5,1.5 0 0,0 10.5,12A1.5,1.5 0 0,0 12,13.5A1.5,1.5 0 0,0 13.5,12A1.5,1.5 0 0,0 12,10.5M7.5,10.5A1.5,1.5 0 0,0 6,12A1.5,1.5 0 0,0 7.5,13.5A1.5,1.5 0 0,0 9,12A1.5,1.5 0 0,0 7.5,10.5M16.5,10.5A1.5,1.5 0 0,0 15,12A1.5,1.5 0 0,0 16.5,13.5A1.5,1.5 0 0,0 18,12A1.5,1.5 0 0,0 16.5,10.5Z"/>
+                </svg>
+            </div>
+            <div class="level-card" data-level="2">
+                <h3>Level 2: Bomb Drop</h3>
+                <p>Calculate bomb trajectories from moving planes</p>
+                <div class="stars">
+                    <svg class="star" viewBox="0 0 24 24">
+                        <path fill="none" stroke="currentColor" stroke-width="2" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <svg class="star" viewBox="0 0 24 24">
+                        <path fill="none" stroke="currentColor" stroke-width="2" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <svg class="star" viewBox="0 0 24 24">
+                        <path fill="none" stroke="currentColor" stroke-width="2" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                </div>
+                <svg class="level-icon" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M11,15H13V17H11V15M11,7H13V13H11V7M12,2C6.47,2 2,6.5 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20M17,15.88V16A5,5 0 0,1 12,21A5,5 0 0,1 7,16V15.88C7,13.04 9.96,12 12,12C14.04,12 17,13.04 17,15.88Z"/>
+                </svg>
+            </div>
+            <div class="level-card" data-level="3">
+                <h3>Level 3: River Crossing</h3>
+                <p>Navigate currents and reach your destination</p>
+                <div class="stars">
+                    <svg class="star" viewBox="0 0 24 24">
+                        <path fill="none" stroke="currentColor" stroke-width="2" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <svg class="star" viewBox="0 0 24 24">
+                        <path fill="none" stroke="currentColor" stroke-width="2" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <svg class="star" viewBox="0 0 24 24">
+                        <path fill="none" stroke="currentColor" stroke-width="2" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                </div>
+                <svg class="level-icon" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M12,20A6,6 0 0,1 6,14C6,10 12,3.25 12,3.25C12,3.25 18,10 18,14A6,6 0 0,1 12,20M12,4.25C12,4.25 16,9.1 16,14C16,16.8 14.21,19.22 12,19.22C9.79,19.22 8,16.8 8,14C8,9.1 12,4.25 12,4.25M13.5,14C13.5,14.83 12.83,15.5 12,15.5C11.17,15.5 10.5,14.83 10.5,14C10.5,13.17 11.17,12.5 12,12.5C12.83,12.5 13.5,13.17 13.5,14Z"/>
+                </svg>
+            </div>
+        </div>
+        
+        <div class="upcoming-section">
+            <h2>Upcoming Levels</h2>
+            <div class="upcoming-levels">
+                <div class="upcoming-card">
+                    <h3>Level 4: Parabolic Shot</h3>
+                    <p>Calculate the perfect arc to hit moving targets</p>
+                    <span class="coming-soon">Coming Soon</span>
+                </div>
+                <div class="upcoming-card">
+                    <h3>Level 5: Gravity Wells</h3>
+                    <p>Navigate projectiles through changing gravity fields</p>
+                    <span class="coming-soon">Coming Soon</span>
+                </div>
+                <div class="upcoming-card">
+                    <h3>Level 6: Space Trajectories</h3>
+                    <p>Master orbital mechanics and escape velocities</p>
+                    <span class="coming-soon">Coming Soon</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="tutorialModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>How to Play Projectile Master</h2>
+            <div class="tutorial-steps">
+                <div class="step">
+                    <svg class="tutorial-icon" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,10.5A1.5,1.5 0 0,0 10.5,12A1.5,1.5 0 0,0 12,13.5A1.5,1.5 0 0,0 13.5,12A1.5,1.5 0 0,0 12,10.5M7.5,10.5A1.5,1.5 0 0,0 6,12A1.5,1.5 0 0,0 7.5,13.5A1.5,1.5 0 0,0 9,12A1.5,1.5 0 0,0 7.5,10.5M16.5,10.5A1.5,1.5 0 0,0 15,12A1.5,1.5 0 0,0 16.5,13.5A1.5,1.5 0 0,0 18,12A1.5,1.5 0 0,0 16.5,10.5Z"/>
+                    </svg>
+                    <h3>Adjust Parameters</h3>
+                    <p>Use the sliders to set the angle and velocity of your projectile</p>
+                </div>
+                <div class="step">
+                    <svg class="tutorial-icon" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M8,5V21L21,12.96L8,5Z"/>
+                    </svg>
+                    <h3>Launch</h3>
+                    <p>Click the launch button to see your projectile in action</p>
+                </div>
+                <div class="step">
+                    <svg class="tutorial-icon" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M11,16.5L18,9.5L16.59,8.09L11,13.67L7.91,10.59L6.5,12L11,16.5Z"/>
+                    </svg>
+                    <h3>Hit the Target</h3>
+                    <p>Adjust your calculations to hit the target in as few attempts as possible</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="physicsModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Physics Guide</h2>
+            <p>Learn the physics concepts behind Projectile Master</p>
+            
+            <div class="physics-concepts">
+                <div class="physics-concept">
+                    <h3>Projectile Motion</h3>
+                    <p>Projectile motion is the motion of an object thrown or projected into the air, subject to only the acceleration of gravity.</p>
+                    <p class="formula">x(t) = v₀·cos(θ)·t</p>
+                    <p class="formula">y(t) = v₀·sin(θ)·t - ½gt²</p>
+                    <p>Where v₀ is initial velocity, θ is launch angle, t is time, and g is gravitational acceleration (9.8 m/s²).</p>
+                </div>
+                
+                <div class="physics-concept">
+                    <h3>Optimal Launch Angle</h3>
+                    <p>For maximum range when landing at the same elevation, the optimal launch angle is 45°.</p>
+                    <p class="formula">R = v₀²·sin(2θ)/g</p>
+                    <p>Maximum range occurs when sin(2θ) = 1 (θ = 45°). For different elevations, the optimal angle varies.</p>
+                </div>
+                
+                <div class="physics-concept">
+                    <h3>Bomb Drop from Moving Plane</h3>
+                    <p>When a bomb is dropped from a moving plane, it retains the plane's horizontal velocity while accelerating downward due to gravity.</p>
+                    <p class="formula">t = √(2h/g)</p>
+                    <p class="formula">d = v·t</p>
+                    <p>Where h is altitude, v is plane speed, t is time to fall, and d is distance to drop before target.</p>
+                </div>
+                
+                <div class="physics-concept">
+                    <h3>River Crossing with Current</h3>
+                    <p>To cross a river with current and land directly opposite the starting point, the boat must point upstream at an angle.</p>
+                    <p class="formula">θ = sin⁻¹(v_current / v_boat)</p>
+                    <p>Where θ is the angle to point upstream, v_current is river current speed, and v_boat is boat speed relative to water.</p>
+                </div>
+                
+                <div class="physics-concept">
+                    <h3>Air Resistance</h3>
+                    <p>Air resistance (drag force) opposes motion and depends on velocity, cross-sectional area, and drag coefficient.</p>
+                    <p class="formula">F_drag = ½ρv²C_dA</p>
+                    <p>Where ρ is air density, v is velocity, C_d is drag coefficient, and A is cross-sectional area.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load saved progress
+        const savedData = localStorage.getItem('projectileMasterProgress');
+        if (savedData) {
+            const progress = JSON.parse(savedData);
+            document.getElementById('completed-levels').textContent = progress.completed;
+            document.getElementById('total-stars').textContent = progress.stars;
+            document.querySelector('.progress-fill').style.width = `${(progress.completed / 3) * 100}%`;
+            
+            // Update star displays
+            progress.levelStars.forEach((stars, index) => {
+                const levelCard = document.querySelector(`.level-card[data-level="${index + 1}"]`);
+                if (levelCard) {
+                    const starElements = levelCard.querySelectorAll('.star');
+                    starElements.forEach((star, i) => {
+                        if (i < stars) {
+                            star.querySelector('path').setAttribute('fill', 'currentColor');
+                        }
+                    });
+                }
+            });
+        }
+        
+        // Event listeners
+        document.getElementById('startGame').addEventListener('click', () => {
+            window.location.href = 'level1.html';
+        });
+        
+        document.querySelectorAll('.level-card').forEach(card => {
+            card.addEventListener('click', () => {
+                window.location.href = `level${card.dataset.level}.html`;
+            });
+        });
+        
+        // Modal functionality
+        const tutorialModal = document.getElementById('tutorialModal');
+        const physicsModal = document.getElementById('physicsModal');
+        const tutorialBtn = document.getElementById('howToPlay');
+        const physicsBtn = document.getElementById('physicsGuide');
+        const closeBtns = document.getElementsByClassName("close");
+        
+        tutorialBtn.onclick = function() {
+            tutorialModal.style.display = "block";
+        }
+        
+        physicsBtn.onclick = function() {
+            physicsModal.style.display = "block";
+        }
+        
+        for (let i = 0; i < closeBtns.length; i++) {
+            closeBtns[i].onclick = function() {
+                tutorialModal.style.display = "none";
+                physicsModal.style.display = "none";
+            }
+        }
+        
+        window.onclick = function(event) {
+            if (event.target == tutorialModal || event.target == physicsModal) {
+                tutorialModal.style.display = "none";
+                physicsModal.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>

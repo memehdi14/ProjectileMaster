@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level 3: River Crossing | Projectile Master</title>
+    <style>
+        :root {
+            --primary: #1a1a2e;
+            --secondary: #16213e;
+            --accent: #e94560;
+            --light: #f1f1f1;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --info: #3498db;
+            --dark: #0f0f1a;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: var(--primary);
+            color: var(--light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .game-container {
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .game-header h1 {
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .game-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 1.1rem;
+        }
+        #gameCanvas {
+            width: 100%;
+            background-color: #6A8EAE;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+            border: 2px solid #284464;
+        }
+        .controls {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .control-group {
+            margin-bottom: 15px;
+        }
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .slider {
+            width: 100%;
+            height: 10px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            border-radius: 5px;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            background: #d23369;
+        }
+        .btn {
+            background: linear-gradient(to right, var(--accent), #d23369);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        .btn:active {
+            transform: translateY(1px);
+        }
+        .launch-btn {
+            width: 100%;
+            margin: 15px 0;
+            padding: 15px;
+            font-size: 1.2rem;
+            background: linear-gradient(to right, var(--accent), #d23369);
+        }
+        .game-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .game-buttons .btn {
+            flex: 1;
+        }
+        .next-btn {
+            background: linear-gradient(to right, #2ecc71, #27ae60);
+        }
+        .formula-toggle {
+            background: linear-gradient(to right, var(--info), #2980b9);
+            margin-bottom: 15px;
+        }
+        .problem-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .problem-container h3 {
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+        .problem-container p {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        .problem-container .constants {
+            font-style: italic;
+            color: var(--light);
+            opacity: 0.8;
+            margin-top: 10px;
+        }
+        .feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        @media (max-width: 768px) {
+            .game-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .game-stats {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .game-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1>
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path fill="currentColor" d="M12,20A6,6 0 0,1 6,14C6,10 12,3.25 12,3.25C12,3.25 18,10 18,14A6,6 0 0,1 12,20M12,4.25C12,4.25 16,9.1 16,14C16,16.8 14.21,19.22 12,19.22C9.79,19.22 8,16.8 8,14C8,9.1 12,4.25 12,4.25M13.5,14C13.5,14.83 12.83,15.5 12,15.5C11.17,15.5 10.5,14.83 10.5,14C10.5,13.17 11.17,12.5 12,12.5C12.83,12.5 13.5,13.17 13.5,14Z"/>
+                </svg>
+                Level 3: River Crossing
+            </h1>
+            <div class="game-stats">
+                <span>
+                    <svg viewBox="0 0 24 24" width="16" height="16">
+                        <path fill="currentColor" d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M12,10.5A1.5,1.5 0 0,1 13.5,12A1.5,1.5 0 0,1 12,13.5A1.5,1.5 0 0,1 10.5,12A1.5,1.5 0 0,1 12,10.5M7.5,10.5A1.5,1.5 0 0,1 9,12A1.5,1.5 0 0,1 7.5,13.5A1.5,1.5 0 0,1 6,12A1.5,1.5 0 0,1 7.5,10.5M16.5,10.5A1.5,1.5 0 0,1 18,12A1.5,1.5 0 0,1 16.5,13.5A1.5,1.5 0 0,1 15,12A1.5,1.5 0 0,1 16.5,10.5Z"/>
+                    </svg>
+                    <span id="attempts">0</span>
+                </span>
+                <span>
+                    <svg viewBox="0 0 24 24" width="16" height="16">
+                        <path fill="currentColor" d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"/>
+                    </svg>
+                    <span id="stars">0</span>/3
+                </span>
+            </div>
+        </div>
+        
+        <div class="problem-container">
+            <h3>Physics Problem</h3>
+            <p>A boat needs to cross a river that is <span id="river-width">300</span> meters wide. The river has a current flowing at <span id="current-speed">2</span> m/s. The boat can move at <span id="boat-speed">5</span> m/s relative to the water.</p>
+            <p><strong>Calculate:</strong> At what angle θ should the boat be pointed upstream to reach the point directly across from the starting point?</p>
+            <p>Enter your calculated angle and speed values below to test your solution.</p>
+            <div class="constants">
+                <p>Constants: River width = <span id="const-river-width">300</span>m, Current speed = <span id="const-current-speed">2</span> m/s, Boat speed = <span id="const-boat-speed">5</span> m/s</p>
+                <p>Formula: θ = sin⁻¹(current speed / boat speed)</p>
+            </div>
+            <div class="feedback" id="feedback"></div>
+        </div>
+        
+        <canvas id="gameCanvas" width="800" height="500"></canvas>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="angle">
+                    <svg viewBox="0 0 24 24" width="16" height="16">
+                        <path fill="currentColor" d="M12,2L15.09,8.26L22,9.27L17,14.14L18.18,21.02L12,17.77L5.82,21.02L7,14.14L2,9.27L8.91,8.26L12,2Z"/>
+                    </svg>
+                    Boat Angle: <span id="angleValue">0</span>°
+                </label>
+                <input type="range" id="angle" min="-45" max="45" value="0" class="slider">
+            </div>
+            
+            <div class="control-group">
+                <label for="speed">
+                    <svg viewBox="0 0 24 24" width="16" height="16">
+                        <path fill="currentColor" d="M13,19V16H11V19H13M12,2C17.35,2.22 19.68,7.62 16.5,11.67C15.67,12.67 14.33,13.33 13.67,14.17C13,15 13,16 13,17H11C11,15.67 11,14.33 11.67,13.5C12.33,12.67 13.67,12 14.5,11C17,8 15.5,4 12,4C10.25,4 8.75,5 8,6.5L6,5.5C7,3.25 9.25,2 12,2Z"/>
+                    </svg>
+                    Boat Speed: <span id="speedValue">5</span> m/s
+                </label>
+                <input type="range" id="speed" min="1" max="10" step="0.1" value="5" class="slider">
+            </div>
+            
+            <div class="control-group">
+                <label for="current">
+                    <svg viewBox="0 0 24 24" width="16" height="16">
+                        <path fill="currentColor" d="M12,2L4.5,20.29L5.21,21L12,18L18.79,21L19.5,20.29L12,2Z"/>
+                    </svg>
+                    Current Speed: <span id="currentValue">2</span> m/s
+                </label>
+                <input type="range" id="current" min="0" max="5" step="0.1" value="2" class="slider">
+            </div>
+            
+            <button id="launchBtn" class="btn launch-btn">
+                <svg viewBox="0 0 24 24" width="16" height="16">
+                    <path fill="currentColor" d="M8,5V21L21,12.96L8,5Z"/>
+                </svg>
+                Start Crossing
+            </button>
+            
+            <div class="game-buttons">
+                <button id="resetBtn" class="btn">
+                    <svg viewBox="0 0 24 24" width="16" height="16">
+                        <path fill="currentColor" d="M12,5V1L7,6L12,11V7A6,6 0 0,1 18,13A6,6 0 0,1 12,19A6,6 0 0,1 6,13H4A8,8 0 0,0 12,21A8,8 0 0,0 20,13A8,8 0 0,0 12,5Z"/>
+                    </svg>
+                    Reset
+                </button>
+                <button onclick="window.location.href='index.html'" class="btn">
+                    <svg viewBox="0 0 24 24" width="16" height="16">
+                        <path fill="currentColor" d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z"/>
+                    </svg>
+                    Menu
+                </button>
+                <button id="nextBtn" class="btn next-btn" disabled>
+                    <svg viewBox="0 0 24 24" width="16" height="16">
+                        <path fill="currentColor" d="M9,16V10H5L12,3L19,10H15V16H9M5,20V18H19V20H5Z"/>
+                    </svg>
+                    Complete Game
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class PhysicsEngine {
+            constructor() {
+                this.gravity = 9.8;
+                this.waterDensity = 1000;
+                this.boatDragCoefficient = 0.8;
+                this.boatCrossSection = 2;
+                this.boatMass = 500;
+            }
+            
+            calculateOptimalAngle(currentSpeed, boatSpeed) {
+                if (boatSpeed <= currentSpeed) return 0;
+                return Math.asin(currentSpeed / boatSpeed) * 180 / Math.PI;
+            }
+            
+            calculateTrajectory(angle, boatSpeed, currentSpeed, startX, startY, steps) {
+                const angleRad = angle * Math.PI / 180;
+                let vx = boatSpeed * Math.sin(angleRad) + currentSpeed;
+                let vy = -boatSpeed * Math.cos(angleRad); // Negative because y increases downward
+                
+                const points = [];
+                let x = startX, y = startY;
+                
+                for (let i = 0; i < steps; i++) {
+                    points.push({x, y});
+                    
+                    // Update position
+                    x += vx * 0.1;
+                    y += vy * 0.1;
+                    
+                    if (x < 0 || x > 800 || y < 0 || y > 500) break;
+                }
+                return points;
+            }
+        }
+
+        class Game {
+            constructor(config) {
+                this.canvas = document.getElementById(config.canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.levelType = config.levelType;
+                this.onComplete = config.onComplete;
+                
+                // Generate random problem parameters
+                this.riverWidth = Math.floor(Math.random() * 200) + 200; // 200-400m
+                this.currentSpeed = (Math.random() * 3 + 1).toFixed(1); // 1-4 m/s
+                this.boatSpeed = (Math.random() * 5 + 3).toFixed(1); // 3-8 m/s
+                
+                // Calculate optimal angle for this problem
+                this.optimalAngle = new PhysicsEngine().calculateOptimalAngle(
+                    parseFloat(this.currentSpeed),
+                    parseFloat(this.boatSpeed)
+                ).toFixed(2);
+                
+                // Set up target and start positions
+                this.target = { x: 700, y: 50, radius: 30 };
+                this.start = { x: 50, y: 450 };
+                
+                this.physics = new PhysicsEngine();
+                this.boat = null;
+                this.attempts = 0;
+                this.animationId = null;
+                this.isComplete = false;
+                this.trajectoryPoints = [];
+                this.waveOffset = 0;
+                
+                // Update problem display
+                this.updateProblemDisplay();
+                
+                // Set slider defaults
+                document.getElementById('speed').value = this.boatSpeed;
+                document.getElementById('speedValue').textContent = this.boatSpeed;
+                document.getElementById('current').value = this.currentSpeed;
+                document.getElementById('currentValue').textContent = this.currentSpeed;
+                
+                this.setupCanvas();
+                this.draw();
+                this.loadProgress();
+            }
+            
+            updateProblemDisplay() {
+                document.getElementById('river-width').textContent = this.riverWidth;
+                document.getElementById('current-speed').textContent = this.currentSpeed;
+                document.getElementById('boat-speed').textContent = this.boatSpeed;
+                document.getElementById('const-river-width').textContent = this.riverWidth;
+                document.getElementById('const-current-speed').textContent = this.currentSpeed;
+                document.getElementById('const-boat-speed').textContent = this.boatSpeed;
+            }
+            
+            setupCanvas() {
+                this.canvas.width = 800;
+                this.canvas.height = 500;
+            }
+            
+            draw() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw sky gradient
+                const skyGradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+                skyGradient.addColorStop(0, '#6A8EAE');
+                skyGradient.addColorStop(1, '#284464');
+                this.ctx.fillStyle = skyGradient;
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw river
+                this.drawRiver();
+                
+                // Draw target
+                this.drawTarget();
+                
+                // Draw boat if exists
+                if (this.boat) {
+                    this.drawBoat();
+                }
+                
+                // Draw trajectory preview if not launched
+                if (!this.boat) {
+                    this.drawTrajectory();
+                }
+            }
+            
+            drawRiver() {
+                // Draw water
+                this.ctx.fillStyle = '#1E90FF';
+                this.ctx.fillRect(150, 0, 500, this.canvas.height);
+                
+                // Draw river banks
+                this.ctx.fillStyle = '#8B4513';
+                this.ctx.fillRect(0, this.canvas.height - 50, 150, 50);
+                this.ctx.fillRect(650, this.canvas.height - 50, 150, 50);
+                
+                // Draw waves
+                this.waveOffset += 0.5;
+                this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                this.ctx.lineWidth = 2;
+                
+                for (let y = 350; y < this.canvas.height - 20; y += 15) {
+                    this.ctx.beginPath();
+                    const waveHeight = 3 + Math.sin(this.waveOffset * 0.05 + y * 0.05) * 2;
+                    
+                    for (let x = 150; x < 650; x += 5) {
+                        const waveXOffset = Math.sin(x * 0.02 + this.waveOffset * 0.05) * waveHeight;
+                        this.ctx.lineTo(x, y + waveXOffset);
+                    }
+                    
+                    this.ctx.stroke();
+                }
+            }
+            
+            drawTarget() {
+                // Draw dock
+                this.ctx.fillStyle = '#8B4513';
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.target.x - 30, this.target.y);
+                this.ctx.lineTo(this.target.x, this.target.y - 20);
+                this.ctx.lineTo(this.target.x + 30, this.target.y);
+                this.ctx.closePath();
+                this.ctx.fill();
+                
+                // Draw flag
+                this.ctx.fillStyle = '#e94560';
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.target.x, this.target.y - 20);
+                this.ctx.lineTo(this.target.x + 20, this.target.y - 10);
+                this.ctx.lineTo(this.target.x, this.target.y);
+                this.ctx.closePath();
+                this.ctx.fill();
+                
+                // Draw pole
+                this.ctx.strokeStyle = '#333';
+                this.ctx.lineWidth = 2;
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.target.x, this.target.y - 20);
+                this.ctx.lineTo(this.target.x, this.target.y + 10);
+                this.ctx.stroke();
+            }
+            
+            drawBoat() {
+                if (!this.boat) return;
+                
+                this.ctx.save();
+                this.ctx.translate(this.boat.x, this.boat.y);
+                
+                // Boat hull
+                this.ctx.fillStyle = '#8B4513';
+                this.ctx.beginPath();
+                this.ctx.moveTo(-20, 0);
+                this.ctx.lineTo(-10, -10);
+                this.ctx.lineTo(20, -10);
+                this.ctx.lineTo(10, 0);
+                this.ctx.closePath();
+                this.ctx.fill();
+                
+                // Mast
+                this.ctx.strokeStyle = '#333';
+                this.ctx.lineWidth = 2;
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, -10);
+                this.ctx.lineTo(0, -30);
+                this.ctx.stroke();
+                
+                // Sail with wind effect
+                const sailAngle = Math.sin(Date.now() * 0.005) * 0.2;
+                this.ctx.fillStyle = '#D3D3D3';
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, -10);
+                this.ctx.lineTo(15 + sailAngle * 5, -30);
+                this.ctx.lineTo(15 + sailAngle * 5, -10);
+                this.ctx.closePath();
+                this.ctx.fill();
+                
+                this.ctx.restore();
+                
+                // Draw wake
+                if (this.trajectoryPoints.length > 1) {
+                    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.beginPath();
+                    
+                    for (let i = Math.max(0, this.trajectoryPoints.length - 10); i < this.trajectoryPoints.length; i++) {
+                        const point = this.trajectoryPoints[i];
+                        const wakeWidth = 5 * (1 - (this.trajectoryPoints.length - i) / 10);
+                        this.ctx.moveTo(point.x - wakeWidth, point.y + 5);
+                        this.ctx.lineTo(point.x + wakeWidth, point.y + 5);
+                    }
+                    
+                    this.ctx.stroke();
+                }
+            }
+            
+            drawTrajectory() {
+                const angle = parseInt(document.getElementById('angle').value);
+                const speed = parseFloat(document.getElementById('speed').value);
+                const current = parseFloat(document.getElementById('current').value);
+                const trajectory = this.physics.calculateTrajectory(
+                    angle, speed, current, this.start.x, this.start.y, 100
+                );
+                
+                this.ctx.beginPath();
+                this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                this.ctx.setLineDash([5, 5]);
+                this.ctx.lineWidth = 2;
+                this.ctx.moveTo(this.start.x, this.start.y);
+                
+                trajectory.forEach(point => {
+                    this.ctx.lineTo(point.x, point.y);
+                });
+                
+                this.ctx.stroke();
+                this.ctx.setLineDash([]);
+            }
+            
+            launch() {
+                if (this.boat || this.isComplete) return;
+                
+                this.attempts++;
+                document.getElementById('attempts').textContent = this.attempts;
+                this.trajectoryPoints = [];
+                
+                const angle = parseInt(document.getElementById('angle').value);
+                const speed = parseFloat(document.getElementById('speed').value);
+                const current = parseFloat(document.getElementById('current').value);
+                const angleRad = angle * Math.PI / 180;
+                
+                this.boat = {
+                    x: this.start.x,
+                    y: this.start.y,
+                    vx: speed * Math.sin(angleRad) + current,
+                    vy: -speed * Math.cos(angleRad),
+                    angle: angle,
+                    speed: speed,
+                    current: current
+                };
+                
+                this.animate();
+            }
+            
+            animate() {
+                if (!this.boat) return;
+                
+                // Record trajectory points for motion trail
+                this.trajectoryPoints.push({x: this.boat.x, y: this.boat.y});
+                if (this.trajectoryPoints.length > 100) {
+                    this.trajectoryPoints.shift();
+                }
+                
+                // Update position
+                this.boat.x += this.boat.vx * 0.1;
+                this.boat.y += this.boat.vy * 0.1;
+                
+                // Check for collisions with target
+                const dx = this.boat.x - this.target.x;
+                const dy = this.boat.y - this.target.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < this.target.radius + 15) {
+                    // Hit target
+                    this.isComplete = true;
+                    const accuracy = this.calculateAccuracy();
+                    this.saveProgress(accuracy.stars);
+                    this.showSuccessEffect();
+                    
+                    if (this.onComplete) this.onComplete(this.attempts, accuracy);
+                    return;
+                }
+                
+                // Check if out of bounds
+                if (this.boat.y < 0 || 
+                    this.boat.x < 0 || 
+                    this.boat.x > this.canvas.width ||
+                    this.boat.y > this.canvas.height - 50) {
+                    this.reset();
+                    return;
+                }
+                
+                this.draw();
+                this.animationId = requestAnimationFrame(() => this.animate());
+            }
+            
+            calculateAccuracy() {
+                const angle = this.boat.angle;
+                const speed = this.boat.speed;
+                const current = this.boat.current;
+                
+                // Calculate angle difference from optimal
+                const angleDiff = Math.abs(angle - this.optimalAngle);
+                
+                let stars = 1;
+                let feedback = "Good try!";
+                
+                if (angleDiff < 5) {
+                    stars = 3;
+                    feedback = "Perfect navigation! You've mastered river crossings!";
+                } else if (angleDiff < 15) {
+                    stars = 2;
+                    feedback = "Great crossing! Nearly perfect angle.";
+                } else {
+                    feedback = "Good attempt! Try adjusting your angle to compensate for current.";
+                }
+                
+                // Show feedback
+                const feedbackElement = document.getElementById('feedback');
+                feedbackElement.textContent = feedback;
+                feedbackElement.style.color = stars === 3 ? '#2ecc71' : stars === 2 ? '#f39c12' : '#e94560';
+                
+                return { stars, feedback };
+            }
+            
+            showSuccessEffect() {
+                // Create splash effect
+                for (let i = 0; i < 30; i++) {
+                    const particle = {
+                        x: this.target.x,
+                        y: this.target.y,
+                        vx: Math.random() * 4 - 2,
+                        vy: Math.random() * -6 - 2,
+                        radius: Math.random() * 3 + 1,
+                        color: `rgba(255, 255, 255, ${0.7 + Math.random() * 0.3})`,
+                        life: 50 + Math.random() * 50
+                    };
+                    
+                    const animateParticle = () => {
+                        this.ctx.globalCompositeOperation = 'lighter';
+                        this.ctx.fillStyle = particle.color;
+                        this.ctx.beginPath();
+                        this.ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+                        this.ctx.fill();
+                        
+                        particle.x += particle.vx;
+                        particle.y += particle.vy;
+                        particle.vy += 0.1;
+                        particle.radius *= 0.97;
+                        particle.life--;
+                        
+                        if (particle.life > 0) {
+                            requestAnimationFrame(animateParticle);
+                        }
+                    };
+                    
+                    animateParticle();
+                }
+                
+                // Draw checkmark
+                this.ctx.strokeStyle = '#2ecc71';
+                this.ctx.lineWidth = 4;
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.target.x - 15, this.target.y);
+                this.ctx.lineTo(this.target.x - 5, this.target.y + 10);
+                this.ctx.lineTo(this.target.x + 20, this.target.y - 15);
+                this.ctx.stroke();
+            }
+            
+            saveProgress(stars) {
+                let progress = {
+                    completed: 0,
+                    stars: 0,
+                    levelStars: [0, 0, 0]
+                };
+                
+                const savedData = localStorage.getItem('projectileMasterProgress');
+                if (savedData) {
+                    progress = JSON.parse(savedData);
+                }
+                
+                const levelIndex = 2; // Level 3 is index 2
+                
+                if (stars > progress.levelStars[levelIndex]) {
+                    progress.levelStars[levelIndex] = stars;
+                    progress.completed = progress.levelStars.filter(s => s > 0).length;
+                    progress.stars = progress.levelStars.reduce((a, b) => a + b, 0);
+                    
+                    localStorage.setItem('projectileMasterProgress', JSON.stringify(progress));
+                }
+            }
+            
+            loadProgress() {
+                const savedData = localStorage.getItem('projectileMasterProgress');
+                if (savedData) {
+                    const progress = JSON.parse(savedData);
+                    document.getElementById('attempts').textContent = this.attempts;
+                    
+                    if (progress.levelStars[2] > 0) {
+                        document.getElementById('stars').textContent = progress.levelStars[2];
+                    }
+                }
+            }
+            
+            reset() {
+                cancelAnimationFrame(this.animationId);
+                this.boat = null;
+                this.trajectoryPoints = [];
+                this.draw();
+            }
+        }
+
+        // Initialize game
+        const game = new Game({
+            canvasId: 'gameCanvas',
+            levelType: 'river',
+            onComplete: function(attempts, accuracy) {
+                document.getElementById('nextBtn').disabled = false;
+                document.getElementById('stars').textContent = accuracy.stars;
+            }
+        });
+        
+        // Event listeners
+        document.getElementById('launchBtn').addEventListener('click', () => game.launch());
+        document.getElementById('resetBtn').addEventListener('click', () => game.reset());
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+        
+        // Update slider displays
+        document.getElementById('angle').addEventListener('input', function() {
+            document.getElementById('angleValue').textContent = this.value;
+            game.draw();
+        });
+        
+        document.getElementById('speed').addEventListener('input', function() {
+            document.getElementById('speedValue').textContent = this.value;
+            game.draw();
+        });
+        
+        document.getElementById('current').addEventListener('input', function() {
+            document.getElementById('currentValue').textContent = this.value;
+            game.draw();
+        });
+    </script>
+</body>
+</html>

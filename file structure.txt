@@ -1,0 +1,21 @@
+index.html          - Main menu
+level1.html         - Basic projectile level
+level2.html         - Bomb dropping level
+level3.html         - River crossing level
+level4.html         - New artillery level
+level5.html         - New gravity well level
+help.html           - Help and tutorial
+settings.html       - Settings page
+about.html          - About page
+css/
+  styles.css        - Main styles
+  level-styles.css  - Level-specific styles
+js/
+  main.js           - Core game functions
+  physics.js        - Physics calculations
+  ui.js             - UI interactions
+  sound.js          - Sound management
+  storage.js        - Local storage handling
+assets/
+  images/           - Game assets
+  sounds/           - Sound effects
