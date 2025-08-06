@@ -4,7 +4,7 @@ Projectile Master is an interactive browser-based physics game where players sol
 ## 🔗 Live Demo
 
 Play online (hosted on Netlify):  
-https:projectilemaster.netlify.app
+https//:projectilemaster.netlify.app
 
 ---
 
